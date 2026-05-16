@@ -1,14 +1,14 @@
 from langchain_core.messages import SystemMessage, ToolMessage
-from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
 from states import AgentState
 from tools import tools, llm_with_tools
-from ltm_memory import search_memory, memory as ltm_store
+from ltm_memory import search_memory, create_memory_store
 from prompt_template import SYSTEM_PROMPT_TEMPLATE
-from langgraph.checkpoint.postgres import PostgresSaver
 from langchain_core.runnables import RunnableConfig
 
 tools_by_name = {tool.name: tool for tool in tools}
+
+ltm_store = create_memory_store()
 
 
 def call_model(state: AgentState):
@@ -65,11 +65,5 @@ workflow.add_conditional_edges(
 )
 
 workflow.add_edge("tools", "agent")
-
-
-
-#with PostgresSaver.from_conn_string("postgresql://user:pass@localhost/db") as memory:
-#    memory.setup()  # creates tables on first run
-#    app = workflow.compile(checkpointer=memory)
 
 chatbot = workflow.compile(store=ltm_store)
